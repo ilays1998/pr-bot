@@ -30,7 +30,7 @@ FEEDBACK_FORM_HTML = '''
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-  <h2>Code Review Feedback</h2>
+  <h2>Code Review Feedback Test</h2>
   <form method="post">
     <label>Rating (1 - Poor, 5 - Excellent):</label><br>
     <input type="number" name="rating" min="1" max="5" required><br><br>
