@@ -2,14 +2,23 @@ from flask import Flask, request, render_template_string, redirect
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
+import json
+import tempfile
 
 app = Flask(__name__)
 
 # --- GOOGLE SHEETS SETUP ---
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("pr-feedback-bot-f3a9a55cdbdb.json", scope)
-client = gspread.authorize(creds)
-sheet = client.open("Code Review Feedback").sheet1
+google_creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+if google_creds_json:
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.json') as temp_json:
+        temp_json.write(google_creds_json)
+        temp_json.flush()
+        creds = ServiceAccountCredentials.from_json_keyfile_name(temp_json.name, scope)
+        client = gspread.authorize(creds)
+        sheet = client.open("Code Review Feedback").sheet1
+else:
+    raise Exception("Google credentials not found in environment variables.")
 
 # --- FEEDBACK FORM PAGE ---
 FEEDBACK_FORM_HTML = '''
