@@ -22,7 +22,6 @@ if google_creds_json:
 else:
     raise Exception("Google credentials not found in environment variables.")
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 # --- FEEDBACK FORM PAGE ---
 FEEDBACK_FORM_HTML = '''
@@ -119,6 +118,7 @@ FEEDBACK_FORM_HTML = '''
 '''
 
 # --- FUNCTION TO GENERATE SUMMARY AND DALLE PROMPT ---
+
 def get_gpt_summary_and_prompt(feedback_text):
     response = client.chat.completions.create(
         model="gpt-4-1106-preview",
