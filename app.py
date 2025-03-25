@@ -4,9 +4,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 import os
 import json
 import tempfile
-import openai
+from openai import OpenAI
 
 app = Flask(__name__)
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # --- GOOGLE SHEETS SETUP ---
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -119,26 +120,28 @@ FEEDBACK_FORM_HTML = '''
 
 # --- FUNCTION TO GENERATE SUMMARY AND DALLE PROMPT ---
 def get_gpt_summary_and_prompt(feedback_text):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4-1106-preview",
         messages=[
             {"role": "system", "content": "You are a helpful assistant that summarizes feedback and generates a creative visual prompt for DALL·E."},
             {"role": "user", "content": f"Summarize this feedback in one sentence and generate a DALL·E prompt that visually represents it: '{feedback_text}'"}
         ]
     )
-    result = response["choices"][0]["message"]["content"]
-    lines = result.split("\n")
+    result = response.choices[0].message.content
+    lines = result.split("\\n")
     summary = lines[0].replace("Summary:", "").strip()
     dalle_prompt = lines[1].replace("DALL·E Prompt:", "").strip()
     return summary, dalle_prompt
 
 # --- FUNCTION TO GENERATE DALL·E IMAGE ---
 def generate_dalle_image(prompt):
-    response = openai.Image.create(
+    image_response = client.images.generate(
+        model="dall-e-3",
         prompt=prompt,
-        size="512x512"
+        size="1024x1024",
+        n=1
     )
-    image_url = response["data"][0]["url"]
+    image_url = image_response.data[0].url
     return image_url
 
 # --- THANK YOU TEMPLATE WITH IMAGE ---
